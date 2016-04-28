@@ -13,7 +13,7 @@ module.exports = deepstreamUtils;
  */
 function deepstreamUtils(options) {
   this.options = options;
-  this.client = null;
+  this.client = deepstreamClient(this.options.host, this.options.clientOptions);
   this.hasInitialized = false;
 }
 
@@ -23,9 +23,7 @@ function deepstreamUtils(options) {
  */
 deepstreamUtils.prototype.initClient = function() {
   if(!this.loginPromise) {
-    this.client = deepstreamClient(this.options.host, this.options.clientOptions);
-    this.loginPromise = this.login(this.options.authParams)
-      .then(() => this.isLoggedIn = true);
+    this.loginPromise = this.login(this.options.authParams);
 
     this.client.on('error', error => {
       console.error('Deepstream client error:', error);
@@ -42,12 +40,12 @@ deepstreamUtils.prototype.initClient = function() {
  */
 deepstreamUtils.prototype.login = function(authParams) {
   return new Promise((resolve, reject) => {
-    this.client.login(authParams, (success, errorCode, errorMessage) => {
+    this.client.login(authParams, (success, errorCode, loginData) => {
       if(!success) {
-        return reject({ code: errorCode, message: errorMessage });
+        return reject({ code: errorCode, message: loginData});
       }
       else {
-        return resolve();
+        return resolve(loginData);
       }
     });
   });
