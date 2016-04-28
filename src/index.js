@@ -13,7 +13,7 @@ module.exports = deepstreamUtils;
  */
 function deepstreamUtils(options) {
   this.options = options;
-  this.client = deepstreamClient(this.options.host, this.options.clientOptions);
+  this.client = null;
   this.hasInitialized = false;
 }
 
@@ -24,7 +24,7 @@ function deepstreamUtils(options) {
 deepstreamUtils.prototype.initClient = function() {
   if(!this.loginPromise) {
     this.loginPromise = this.login(this.options.authParams);
-
+    this.client = deepstreamClient(this.options.host, this.options.clientOptions);
     this.client.on('error', error => {
       console.error('Deepstream client error:', error);
     });
