@@ -22,23 +22,28 @@ function deepstreamUtils(options) {
  * @returns {Promise} Resolves when the client has logged in
  */
 deepstreamUtils.prototype.initClient = function() {
+  this.client = deepstreamClient(this.options.host, this.options.clientOptions);
+  this.client.on('error', error => {
+    console.error('Deepstream client error:', error);
+  });
+  return this.client;
+};
+
+deepstreamUtils.prototype.login = function() {
   if(!this.loginPromise) {
-    this.loginPromise = this.login(this.options.authParams);
-    this.client = deepstreamClient(this.options.host, this.options.clientOptions);
-    this.client.on('error', error => {
-      console.error('Deepstream client error:', error);
-    });
+    this.loginPromise = this.base_login(this.options.authParams);
   }
 
   return this.loginPromise;
 };
+
 
 /**
  * Wraps the deepstream client login function in a promise
  * @param {Object} authParams
  * @returns {Promise} Resolves when the client has logged in
  */
-deepstreamUtils.prototype.login = function(authParams) {
+deepstreamUtils.prototype.base_login = function(authParams) {
   return new Promise((resolve, reject) => {
     this.client.login(authParams, (success, errorCode, loginData) => {
       if(!success) {
