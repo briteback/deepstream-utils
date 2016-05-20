@@ -85,6 +85,7 @@ RecordUtils.prototype.ds_getRecord = function(client, recordName) {
   return new Promise((resolve, reject) => {
     var record = client.record.getRecord(recordName);
     record.whenReady(() => resolve(record));
+    record.on('error', err => reject(err));
   });
 };
 
