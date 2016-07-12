@@ -68,7 +68,7 @@ function base_login(client, authParams) {
   return new Promise((resolve, reject) => {
     client.login(authParams, (success, data) => {
       if(!success) {
-        return reject({ code: data, message: data});
+        return reject({ code: 0, message: data});
       }
       else {
         return resolve(data);
@@ -84,12 +84,12 @@ function base_login(client, authParams) {
  */
 DeepstreamUtils.prototype.base_login = function(authParams) {
   return new Promise((resolve, reject) => {
-    this.client.login(authParams, (success, errorCode, loginData) => {
+    this.client.login(authParams, (success, data) => {
       if(!success) {
-        return reject({ code: errorCode, message: loginData});
+        return reject({ code: 0, message: data});
       }
       else {
-        return resolve(loginData);
+        return resolve(data);
       }
     });
   });
