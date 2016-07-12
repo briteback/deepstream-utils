@@ -66,12 +66,12 @@ DeepstreamUtils.prototype.login = function() {
  */
 function base_login(client, authParams) {
   return new Promise((resolve, reject) => {
-    client.login(authParams, (success, errorCode, loginData) => {
+    client.login(authParams, (success, data) => {
       if(!success) {
-        return reject({ code: errorCode, message: loginData});
+        return reject({ code: data, message: data});
       }
       else {
-        return resolve(loginData);
+        return resolve(data);
       }
     });
   });
