@@ -7,7 +7,8 @@ module.exports = RecordUtils;
  * @param {Object} client A deepstream client to be used for the requests
  * @param {Function} runAfterInitialize A fuction that should be run before any other functions
  */
-function RecordUtils(client, runAfterInitialize) {
+function RecordUtils(client, runAfterInitialize, options) {
+  this.options = options;
   this.client = client;
   this.runAfterInitialize = runAfterInitialize;
 }
@@ -29,11 +30,15 @@ RecordUtils.prototype.base_has = function(recordName) {
 /**
  * Get a record, if the record didn't exist it will NOT
  * be created and the promise will be rejected.
+ * Option disableHasCheck will disable this behavior and omit the check.
  * @param {String} recordName
  * @returns {Promise} Resolves the record
  * @throws {exception} Throws if record doesn't exist
  */
 RecordUtils.prototype.base_getRecord = function(recordName) {
+  if (this.options.disableHasCheck) {
+    return this.ds_getRecord(this.client, recordName);
+  }
   return this.base_has(recordName)
     .then(hasRecord => {
       if(!hasRecord) {

@@ -7,7 +7,8 @@ module.exports = RpcUtils;
  * @param {Object} client A deepstream client to be used for the requests
  * @param {Function} runAfterInitialize A fuction that should be run before any other functions
  */
-function RpcUtils(client, runAfterInitialize) {
+function RpcUtils(client, runAfterInitialize, options) {
+  this.options = options;
   this.client = client;
   this.runAfterInitialize = runAfterInitialize;
 }

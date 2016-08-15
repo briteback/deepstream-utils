@@ -12,14 +12,15 @@ module.exports = DeepstreamUtils;
  * @param {String} options.host Url for the client
  * @param {Object} options.clientOptions Options for the client
  * @param {Object} options.authParams Authentication parameters for the client on login
+ * @param {Object} options.disableHasCheck Dont check if record exists in getRecord
  */
 function DeepstreamUtils(options) {
   this.options = options;
   this.client = null;
   this.hasInitialized = false;
 
-  this.record = new RecordUtils(this.client, this.runAfterInitialize.bind(this));
-  this.rpc = new RpcUtils(this.client, this.runAfterInitialize.bind(this));
+  this.record = new RecordUtils(this.client, this.runAfterInitialize.bind(this), options);
+  this.rpc = new RpcUtils(this.client, this.runAfterInitialize.bind(this), options);
 }
 
 /**
