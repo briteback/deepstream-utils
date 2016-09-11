@@ -4,8 +4,6 @@ var deepstreamClient = require('deepstream.io-client-js');
 var RecordUtils = require('./record');
 var RpcUtils = require('./rpc');
 
-module.exports = DeepstreamUtils;
-
 /**
  * Constructor for the deepstream utilsb
  * @param {Object} options
@@ -111,3 +109,6 @@ DeepstreamUtils.prototype.runAfterInitialize = function(fn, args) {
       .then(() => fn.apply(this, args));
   }
 };
+
+DeepstreamUtils.MERGE_STRATEGIES = deepstreamClient.MERGE_STRATEGIES;
+module.exports = DeepstreamUtils;
