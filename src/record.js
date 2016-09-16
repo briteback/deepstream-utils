@@ -74,7 +74,7 @@ RecordUtils.prototype.base_createRecord = function(recordName) {
 RecordUtils.prototype.base_snapshot = function(recordName) {
   return new Promise((resolve, reject) => {
     this.client.record.snapshot(recordName, (error, snapshot) => {
-      if(error) reject(error);
+      if(error) reject({ error, recordName });
       else resolve(snapshot);
     });
   });
