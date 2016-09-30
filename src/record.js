@@ -80,6 +80,22 @@ RecordUtils.prototype.base_snapshot = function(recordName) {
   });
 };
 
+
+/**
+ * Create or get a record.
+ * @param {String} recordName Name of the record to get or create
+ * @returns {Promise} Resolves an object with a created boolean and the record
+ */
+RecordUtils.prototype.base_getOrCreate = function(recordName) {
+  return this.base_has(recordName)
+    .then(hasRecord =>
+          this.ds_getRecord(this.client, recordName)
+          .then(record => ({
+            created: hasRecord,
+            record
+          })));
+};
+
 /**
  * Wraps deepstream getRecord in a promise.
  * @param {Object} client Deepstream client
@@ -96,17 +112,21 @@ RecordUtils.prototype.ds_getRecord = function(client, recordName) {
 
 
 RecordUtils.prototype.has = function(recordName) {
-  return this.runAfterInitialize(this.base_has.bind(this), arguments);
+  return this.runAfterInitialize(this.base_has.bind(this), recordName);
 };
 
 RecordUtils.prototype.getRecord = function(recordName) {
-  return this.runAfterInitialize(this.base_getRecord.bind(this), arguments);
+  return this.runAfterInitialize(this.base_getRecord.bind(this), recordName);
 };
 
 RecordUtils.prototype.createRecord = function(recordName) {
-  return this.runAfterInitialize(this.base_createRecord.bind(this), arguments);
+  return this.runAfterInitialize(this.base_createRecord.bind(this), recordName);
 };
 
 RecordUtils.prototype.snapshot = function(recordName) {
-  return this.runAfterInitialize(this.base_snapshot.bind(this), arguments);
+  return this.runAfterInitialize(this.base_snapshot.bind(this), recordName);
+};
+
+RecordUtils.prototype.getOrCreate = function(recordName) {
+  return this.runAfterInitialize(this.base_getOrCreate.bind(this), recordName);
 };
