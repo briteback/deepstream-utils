@@ -112,21 +112,21 @@ RecordUtils.prototype.ds_getRecord = function(client, recordName) {
 
 
 RecordUtils.prototype.has = function(recordName) {
-  return this.runAfterInitialize(this.base_has.bind(this), recordName);
+  return this.runAfterInitialize(this.base_has.bind(this), arguments);
 };
 
 RecordUtils.prototype.getRecord = function(recordName) {
-  return this.runAfterInitialize(this.base_getRecord.bind(this), recordName);
+  return this.runAfterInitialize(this.base_getRecord.bind(this), arguments);
 };
 
 RecordUtils.prototype.createRecord = function(recordName) {
-  return this.runAfterInitialize(this.base_createRecord.bind(this), recordName);
+  return this.runAfterInitialize(this.base_createRecord.bind(this), arguments);
 };
 
 RecordUtils.prototype.snapshot = function(recordName) {
-  return this.runAfterInitialize(this.base_snapshot.bind(this), recordName);
+  return this.runAfterInitialize(this.base_snapshot.bind(this), arguments);
 };
 
 RecordUtils.prototype.getOrCreate = function(recordName) {
-  return this.runAfterInitialize(this.base_getOrCreate.bind(this), recordName);
+  return this.runAfterInitialize(this.base_getOrCreate.bind(this), arguments);
 };
