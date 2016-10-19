@@ -31,8 +31,8 @@ DeepstreamUtils.prototype.initClient = function() {
   this.record.client = this.client;
   this.rpc.client = this.client;
 
-  this.client.on('error', error => {
-    console.error('Deepstream client error:', error);
+  this.client.on('error', (error, event, topic) => {
+    console.error('Deepstream client error:', { error, event, topic });
   });
   return this.client;
 };
