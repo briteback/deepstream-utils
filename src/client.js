@@ -77,6 +77,26 @@ function base_login(client, authParams) {
 };
 
 /**
+ * Close (logout) the client
+ * @returns {Promise}
+ */
+DeepstreamUtils.prototype.close = function () {
+  if (this.loginPromise) {
+    return this.loginPromise
+      .catch(error => {
+        console.error('Error with loginPromise on close', error);
+      })
+      .then(() => {
+        this.client.close();
+        this.loginPromise = null;
+      });
+  }
+
+  return Promise.resolve();
+};
+
+
+/**
  * Wraps the deepstream client login function in a promise
  * @param {Object} authParams
  * @returns {Promise} Resolves when the client has logged in
