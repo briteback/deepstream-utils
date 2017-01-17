@@ -22,7 +22,7 @@ function RpcUtils(client, runAfterInitialize, options) {
 RpcUtils.prototype.base_make = function(rpc, data) {
   return new Promise((resolve, reject) => {
     this.client.rpc.make(rpc, data, (error, result) => {
-      if(error) reject(error);
+      if (error !== null) reject(error);
       else resolve(result);
     });
   });
