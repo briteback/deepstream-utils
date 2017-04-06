@@ -9,10 +9,17 @@ module.exports = RecordUtils;
  */
 function finishWriteAck(resolve, reject) {
   return error => {
-    if(error) reject(error);
+    if (error) reject(error);
     else resolve();
-  }
+  };
 }
+
+/**
+ * Deep equal
+ * @param {} val1
+ * @param {} val2
+*/
+const eq = (val1, val2) => JSON.stringify(val1) === JSON.stringify(val2);
 
 /**
  * A Promise-wrapped record.set() which resolves after write acknowledgement.
@@ -24,18 +31,20 @@ function finishWriteAck(resolve, reject) {
 function promiseSet(path, value, discard) {
   return new Promise((resolve, reject) => {
     if (typeof path === 'object') {
-        this.set(path, finishWriteAck(resolve, reject));
-        discard = value;
-      } else {
-        this.set(path, value, finishWriteAck(resolve, reject));
-      }
-  })
-  .then(() => {
-    if (discard) {
-      this.discard();
+      discard = value;
+      if (eq(this.get(), path)) return resolve();
+      this.set(path, finishWriteAck(resolve, reject));
+    } else {
+      if (eq(this.get(path), value)) return resolve();
+      this.set(path, value, finishWriteAck(resolve, reject));
     }
-    return this;
   })
+    .then(() => {
+      if (discard) {
+        this.discard();
+      }
+      return this;
+    });
 }
 
 /**
