@@ -3,6 +3,61 @@
 module.exports = RecordUtils;
 
 /**
+ * Callback handler for promiseSet. Rejects if there was an error, else resolves.
+ * @param {Function} resolve
+ * @param {Function} reject
+ */
+function finishWriteAck(resolve, reject) {
+  return error => {
+    if (error) reject(error);
+    else resolve();
+  };
+}
+
+/**
+ * Deep equal
+ * @param {} val1
+ * @param {} val2
+*/
+const eq = (val1, val2) => JSON.stringify(val1) === JSON.stringify(val2);
+
+/**
+ * A Promise-wrapped record.set() which resolves after write acknowledgement.
+ * @param {String} [path] A path for the value to be set on the record.
+ * @param {*} value The value to be set at the path, or an object containing the entire record data to set.
+ * @param {Boolean} [discard] Whether or not to discard the record.
+ * @returns {Promise}
+ */
+function promiseSet(path, value, discard) {
+  return new Promise((resolve, reject) => {
+    if (typeof path === 'object') {
+      discard = value;
+      if (eq(this.get(), path)) return resolve();
+      this.set(path, finishWriteAck(resolve, reject));
+    } else {
+      if (eq(this.get(path), value)) return resolve();
+      this.set(path, value, finishWriteAck(resolve, reject));
+    }
+  })
+    .then(() => {
+      if (discard) {
+        this.discard();
+      }
+      return this;
+    });
+}
+
+/**
+ * Adds a Promise-wrapped record.set() to a Deepstream record, for easy write acknowledgement.
+ * @param {Record} record A Deepstream record to add pSet to (modifies record)
+ * @returns {Record}
+ */
+function addPromiseSet(record) {
+  record.pSet = promiseSet.bind(record);
+  return record;
+}
+
+/**
  * Constructor for the record utils
  * @param {Object} client A deepstream client to be used for the requests
  * @param {Function} runAfterInitialize A fuction that should be run before any other functions
@@ -105,7 +160,7 @@ RecordUtils.prototype.base_getOrCreate = function(recordName) {
 RecordUtils.prototype.ds_getRecord = function(client, recordName) {
   return new Promise((resolve, reject) => {
     var record = client.record.getRecord(recordName);
-    record.whenReady(() => resolve(record));
+    record.whenReady(() => resolve(addPromiseSet(record)));
     record.on('error', err => reject(err));
   });
 };
