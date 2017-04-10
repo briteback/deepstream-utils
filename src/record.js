@@ -15,13 +15,6 @@ function finishWriteAck(resolve, reject) {
 }
 
 /**
- * Deep equal
- * @param {} val1
- * @param {} val2
-*/
-const eq = (val1, val2) => JSON.stringify(val1) === JSON.stringify(val2);
-
-/**
  * A Promise-wrapped record.set() which resolves after write acknowledgement.
  * @param {String} [path] A path for the value to be set on the record.
  * @param {*} value The value to be set at the path, or an object containing the entire record data to set.
@@ -32,10 +25,8 @@ function promiseSet(path, value, discard) {
   return new Promise((resolve, reject) => {
     if (typeof path === 'object') {
       discard = value;
-      if (eq(this.get(), path)) return resolve();
       this.set(path, finishWriteAck(resolve, reject));
     } else {
-      if (eq(this.get(path), value)) return resolve();
       this.set(path, value, finishWriteAck(resolve, reject));
     }
   })
