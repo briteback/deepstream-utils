@@ -60,6 +60,43 @@ function RecordUtils(client, runAfterInitialize, options) {
 }
 
 /**
+ * Set data on a existing or new record without subscribing.
+ * @param {Array} args - First element will contain the record name,
+ * second element is a key or object, and if the second element is a
+ * key the third element must be the value.
+ * @param {Boolean} create - If the given recor name should be created
+ * @returns {Promise}
+ */
+RecordUtils.prototype.base_setData = function (args, create) {
+  const [recordName] = args;
+
+  return new Promise((resolve, reject) => {
+    this.client.record.has(recordName, (error, hasRecord) => {
+      if (error) {
+        return reject(error);
+      } else if (!create && !hasRecord) {
+        return reject(`Trying to setData on nonexistent record: ${recordName}`);
+      } else if (create && hasRecord) {
+        return reject(`Trying to create and setData on existing record: ${recordName}`);
+      }
+
+      if (args.length === 2) {
+        return this.client.record.setData(recordName, args[1], setError => {
+          if (error) reject(setError);
+          else resolve();
+        });
+      } else if (args.length === 3) {
+        return this.client.record.setData(recordName, args[1], args[2], setError => {
+          if (error) reject(setError);
+          else resolve();
+        });
+      }
+      return reject(`Incorrect arguments given to setData: ${args}`);
+    });
+  });
+};
+
+/**
  * Checks if a record exists
  * @param {String} recordName
  * @returns {Promise} Resolves a boolean or rejects a error
@@ -175,4 +212,12 @@ RecordUtils.prototype.snapshot = function(recordName) {
 
 RecordUtils.prototype.getOrCreate = function(recordName) {
   return this.runAfterInitialize(this.base_getOrCreate.bind(this), arguments);
+};
+
+RecordUtils.prototype.setData = function (...args) {
+  return this.runAfterInitialize(this.base_setData.bind(this), [args, false]);
+};
+
+RecordUtils.prototype.createAndSetData = function (...args) {
+  return this.runAfterInitialize(this.base_setData.bind(this), [args, true]);
 };
