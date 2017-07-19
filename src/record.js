@@ -97,6 +97,16 @@ RecordUtils.prototype.base_setData = function (args, create) {
 };
 
 /**
+ * Delete a record
+ * @param {String} recordName
+ * @returns {Promise}
+ */
+RecordUtils.prototype.base_delete = function (recordName) {
+  return this.base_getRecord(recordName)
+    .then(record => record.delete());
+};
+
+/**
  * Checks if a record exists
  * @param {String} recordName
  * @returns {Promise} Resolves a boolean or rejects a error
@@ -220,4 +230,8 @@ RecordUtils.prototype.setData = function (...args) {
 
 RecordUtils.prototype.createAndSetData = function (...args) {
   return this.runAfterInitialize(this.base_setData.bind(this), [args, true]);
+};
+
+RecordUtils.prototype.delete = function (...args) {
+  return this.runAfterInitialize(this.base_delete.bind(this), args);
 };
