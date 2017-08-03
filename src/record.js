@@ -57,6 +57,7 @@ function RecordUtils(client, runAfterInitialize, options) {
   this.options = options;
   this.client = client;
   this.runAfterInitialize = runAfterInitialize;
+  this.setDataCallbacks = {};
 }
 
 /**
@@ -71,6 +72,12 @@ RecordUtils.prototype.base_setData = function (args, create) {
   const [recordName] = args;
 
   return new Promise((resolve, reject) => {
+    if (!this.setDataCallbacks[recordName]) {
+      this.setDataCallbacks[recordName] = [{ resolve, reject }];
+    } else {
+      this.setDataCallbacks[recordName].push({ resolve, reject });
+    }
+
     this.client.record.has(recordName, (error, hasRecord) => {
       if (error) {
         return reject(error);
@@ -93,7 +100,21 @@ RecordUtils.prototype.base_setData = function (args, create) {
       }
       return reject(`Incorrect arguments given to setData: ${args}`);
     });
-  });
+  })
+    .then(res => {
+      if (this.setDataCallbacks[recordName]) {
+        this.setDataCallbacks[recordName].forEach(({ resolve }) => resolve(res));
+        delete this.setDataCallbacks[recordName];
+      }
+      return res;
+    })
+    .catch(error => {
+      if (this.setDataCallbacks[recordName]) {
+        this.setDataCallbacks[recordName].forEach(({ reject }) => reject(error));
+        delete this.setDataCallbacks[recordName];
+      }
+      throw error;
+    });
 };
 
 /**
