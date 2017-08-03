@@ -225,6 +225,55 @@ RecordUtils.prototype.ds_getRecord = function(client, recordName) {
 };
 
 
+/**
+ *
+ * @param {String} recordName
+ * @param {Boolean} ignoreWhenReady - If true; will return the list without waiting
+ * for when ready else a promise will be returned that resolves when the whenReady
+ * callback is called.
+ */
+RecordUtils.prototype.getList = function (listName, ignoreWhenReady) {
+  if (ignoreWhenReady) {
+    return this.client.record.getList(listName);
+  }
+  return new Promise((resolve, reject) => {
+    const list = this.client.record.getList(listName);
+    list.whenReady(() => resolve(list));
+    list.once('error', err => reject(err));
+  });
+};
+
+/**
+ * Add the entry to the list and discard.
+ * @param {String} listName
+ * @param {String} entry
+ */
+RecordUtils.prototype.addEntry = function (listName, entry, index) {
+  const list = this.client.record.getList(listName);
+  list.addEntry(entry, index);
+  list.discard();
+};
+
+/**
+ * Remove the entry from the list and discard.
+ * @param {String} listName
+ * @param {String} entry
+ */
+RecordUtils.prototype.removeEntry = function (listName, entry, index) {
+  const list = this.client.record.getList(listName);
+  list.removeEntry(entry, index);
+  list.discard();
+};
+
+/**
+ *
+ * @param {String} listName
+ */
+RecordUtils.prototype.deleteList = function (listName) {
+  this.client.record.getList(listName)
+    .then(list => list.delete());
+};
+
 RecordUtils.prototype.has = function(recordName) {
   return this.runAfterInitialize(this.base_has.bind(this), arguments);
 };
