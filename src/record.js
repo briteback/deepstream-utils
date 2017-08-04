@@ -274,6 +274,31 @@ RecordUtils.prototype.deleteList = function (listName) {
     .then(list => list.delete());
 };
 
+/**
+ * Get the entries of a list.
+ * @param {String} listName
+ * @returns {Promise.<Array>}
+ */
+RecordUtils.prototype.getEntries = function (listName) {
+  return this.getList(listName)
+    .then(list => {
+      const entries = list.getEntries();
+      list.discard();
+      return entries;
+    });
+};
+
+/**
+ * Check if the list includes the given entry.
+ * @param {String} listName
+ * @param {String} entry
+ * @returns {Promise.<Boolean>}
+ */
+RecordUtils.prototype.listIncludes = function (listName, entry) {
+  return this.getEntries(listName)
+    .then(entries => entries.includes(entry));
+};
+
 RecordUtils.prototype.has = function(recordName) {
   return this.runAfterInitialize(this.base_has.bind(this), arguments);
 };
