@@ -26,13 +26,12 @@ function promiseSet(path, value, discard) {
     } else {
       this.set(path, value, finishWriteAck(resolve, reject));
     }
-  })
-    .then(() => {
-      if (discard) {
-        this.discard();
-      }
-      return this;
-    });
+  }).then(() => {
+    if (discard) {
+      this.discard();
+    }
+    return this;
+  });
 }
 
 /**
@@ -72,7 +71,7 @@ class RecordUtils {
       if (!this.setDataCallbacks.has(recordName)) {
         this.setDataCallbacks.set(recordName, new Set([{ resolve, reject }]));
       } else {
-        this.setDataCallbacks(recordName).add({ resolve, reject });
+        this.setDataCallbacks.get(recordName).add({ resolve, reject });
       }
 
       this.client.record.has(recordName, (error, hasRecord) => {
@@ -168,7 +167,7 @@ class RecordUtils {
    */
   getRecord(recordName) {
     if (this.options.disableHasCheck) {
-      return this.ds_getRecord(recordName);
+      return this.dsGetRecord(recordName);
     }
     return this.has(recordName)
       .then(hasRecord => {
@@ -176,7 +175,7 @@ class RecordUtils {
           throw `No record by that name ${recordName}`;
         }
 
-        return this.ds_getRecord(recordName);
+        return this.dsGetRecord(recordName);
       });
   }
 
@@ -193,7 +192,7 @@ class RecordUtils {
           throw `Record already exists ${recordName}`;
         }
 
-        return this.ds_getRecord(recordName);
+        return this.dsGetRecord(recordName);
       });
   }
 
@@ -220,7 +219,7 @@ class RecordUtils {
   getOrCreate(recordName) {
     return this.has(recordName)
       .then(hasRecord =>
-            this.ds_getRecord(recordName)
+            this.dsGetRecord(recordName)
             .then(record => ({
               created: hasRecord,
               record
@@ -233,7 +232,7 @@ class RecordUtils {
    * @param {String} recordName Name of the record to get
    * @returns {Promise}
    */
-  ds_getRecord(recordName) {
+  dsGetRecord(recordName) {
     return new Promise((resolve, reject) => {
       const record = this.client.record.getRecord(recordName);
       record.whenReady(() => resolve(addPromiseSet(record)));
@@ -285,9 +284,10 @@ class RecordUtils {
   /**
    * Delete the list
    * @param {String} listName
+   * @returns {Promise}
    */
   deleteList(listName) {
-    this.client.record.getList(listName)
+    return this.client.record.getList(listName)
       .then(list => list.delete());
   }
 
