@@ -287,7 +287,7 @@ class RecordUtils {
    * @returns {Promise}
    */
   deleteList(listName) {
-    return this.client.record.getList(listName)
+    return this.getList(listName)
       .then(list => list.delete());
   }
 
