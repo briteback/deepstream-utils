@@ -54,6 +54,13 @@ class RecordUtils {
     this.options = options;
     this.client = client;
     this.setDataCallbacks = new Map();
+
+    /**
+     * Get the entries of a list.
+     * @param {String} listName
+     * @returns {Promise.<Array>}
+     */
+    this.getEntries = this.snapshot;
   }
 
   /**
@@ -267,7 +274,7 @@ class RecordUtils {
   addEntry(listName, entry, index) {
     const list = this.client.record.getList(listName);
     list.addEntry(entry, index);
-    list.discard();
+    setTimeout(() => list.discard(), 10000);
   }
 
   /**
@@ -278,7 +285,7 @@ class RecordUtils {
   removeEntry(listName, entry, index) {
     const list = this.client.record.getList(listName);
     list.removeEntry(entry, index);
-    list.discard();
+    setTimeout(() => list.discard(), 10000);
   }
 
   /**
@@ -289,20 +296,6 @@ class RecordUtils {
   deleteList(listName) {
     return this.getList(listName)
       .then(list => list.delete());
-  }
-
-  /**
-   * Get the entries of a list.
-   * @param {String} listName
-   * @returns {Promise.<Array>}
-   */
-  getEntries(listName) {
-    return this.getList(listName)
-      .then(list => {
-        const entries = list.getEntries();
-        list.discard();
-        return entries;
-      });
   }
 
   /**
