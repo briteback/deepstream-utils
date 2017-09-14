@@ -228,7 +228,7 @@ class RecordUtils {
       .then(hasRecord =>
             this.dsGetRecord(recordName)
             .then(record => ({
-              created: hasRecord,
+              created: !hasRecord,
               record
             })));
   }
