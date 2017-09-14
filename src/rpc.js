@@ -48,7 +48,7 @@ class RpcUtils {
   make(rpc, data) {
     return new Promise((resolve, reject) => {
       this.client.rpc.make(rpc, data, (error, result) => {
-        if (!error) {
+        if (error === null) {
           resolve(result);
         } else if (error === 'NO_RPC_PROVIDER' && this.retryRPCTimeout !== 0) {
           this.retryRPCMake(resolve, reject, rpc, data, Date.now());
