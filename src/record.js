@@ -270,22 +270,28 @@ class RecordUtils {
    * Add the entry to the list and discard.
    * @param {String} listName
    * @param {String} entry
+   * @returns {Promise}
    */
   addEntry(listName, entry, index) {
-    const list = this.client.record.getList(listName);
-    list.addEntry(entry, index);
-    setTimeout(() => list.discard(), 10000);
+    return this.getList(listName)
+      .then(list => {
+        list.addEntry(entry, index);
+        setTimeout(() => list.discard(), 10000);
+      });
   }
 
   /**
    * Remove the entry from the list and discard.
    * @param {String} listName
    * @param {String} entry
+   * @returns {Promise}
    */
   removeEntry(listName, entry, index) {
-    const list = this.client.record.getList(listName);
-    list.removeEntry(entry, index);
-    setTimeout(() => list.discard(), 10000);
+    return this.getList(listName)
+      .then(list => {
+        list.removeEntry(entry, index);
+        setTimeout(() => list.discard(), 10000);
+      });
   }
 
   /**
