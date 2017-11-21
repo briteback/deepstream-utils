@@ -93,4 +93,4 @@ class DeepstreamUtils {
   }
 }
 
-module.exports = deepstream;
+module.exports = DeepstreamUtils;
