@@ -93,5 +93,4 @@ class DeepstreamUtils {
   }
 }
 
-DeepstreamUtils.MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
 module.exports = deepstream;
