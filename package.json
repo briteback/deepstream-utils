@@ -9,6 +9,6 @@
   "author": "Briteback AB",
   "license": "ISC",
   "peerDependencies": {
-    "deepstream.io-client-js": "2.x"
+    "deepstream.io-client-js": "4.x"
   }
 }

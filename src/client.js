@@ -1,4 +1,4 @@
-const deepstreamClient = require('deepstream.io-client-js');
+const { deepstream } = require('deepstream.io-client-js');
 const RecordUtils = require('./record');
 const RpcUtils = require('./rpc');
 
@@ -26,7 +26,7 @@ class DeepstreamUtils {
    * @returns {Promise} Resolves when the client has logged in
    */
   initClient() {
-    this.client = deepstreamClient(this.options.host, this.options.clientOptions);
+    this.client = deepstream(this.options.host, this.options.clientOptions);
     // TODO: this should be done better...
     this.record.client = this.client;
     this.rpc.client = this.client;
@@ -93,5 +93,5 @@ class DeepstreamUtils {
   }
 }
 
-DeepstreamUtils.MERGE_STRATEGIES = deepstreamClient.MERGE_STRATEGIES;
-module.exports = DeepstreamUtils;
+DeepstreamUtils.MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES;
+module.exports = deepstream;
