@@ -44,7 +44,7 @@ class DeepstreamUtils {
    */
   login() {
     if (!this.loginPromise) {
-      this.loginPromise = this.baseLogin(this.options.authParams)
+      this.loginPromise = this.client.login(this.options.authParams)
         .then(loginData => {
           this.hasInitialized = true;
           return loginData;
@@ -73,23 +73,6 @@ class DeepstreamUtils {
         });
     }
     return Promise.resolve();
-  }
-
-
-  /**
-   * Wraps the deepstream client login function in a promise
-   * @param {Object} authParams
-   * @returns {Promise} Resolves when the client has logged in
-   */
-  baseLogin(authParams) {
-    return new Promise((resolve, reject) => {
-      this.client.login(authParams, (success, data) => {
-        if (!success) {
-          return reject({ code: 0, message: data });
-        }
-        return resolve(data);
-      });
-    });
   }
 }
 
