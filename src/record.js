@@ -92,12 +92,12 @@ class RecordUtils {
 
         if (args.length === 2) {
           return this.client.record.setData(recordName, args[1], setError => {
-            if (error) reject(setError);
+            if (setError) reject(setError);
             else resolve();
           });
         } else if (args.length === 3) {
           return this.client.record.setData(recordName, args[1], args[2], setError => {
-            if (error) reject(setError);
+            if (setError) reject(setError);
             else resolve();
           });
         }
