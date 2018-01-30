@@ -5,9 +5,14 @@ class RpcUtils {
   /**
    * Constructor for the rpc utils
    * @param {Object} client A deepstream client to be used for the requests
+   * @param {Object} [options] Additional options
+   * @param {Function} [options.audit]
+   * @param {Number} [options.retryRPCTimeout]
+   * @param {Number} [options.retryRPCInterval]
    */
-  constructor(client, options) {
+  constructor(client, options = {}) {
     this.options = options;
+    this.audit = options.audit;
     this.client = client;
 
     this.retryRPCTimeout = options.retryRPCTimeout === undefined
@@ -57,6 +62,35 @@ class RpcUtils {
         }
       });
     });
+  }
+
+  /**
+   * Provide a rpc
+   * @param {String} rpc RPC name
+   * @param {function} cb
+   * @param {Object} [options] If options and an audit function are specified,
+   *                           the audit function will be called with options and rpc data.
+   */
+  provide(rpc, cb, options) {
+    if (options && this.audit) {
+      this.client.rpc.provide(rpc, async (data, response) => {
+        const send = response.send.bind(response);
+        const error = response.error.bind(response);
+
+        response.send = async result => {
+          send(result);
+          await this.audit({ rpc, data, result, error: false, options });
+          console.log('DONE!!');
+        };
+        response.error = result => {
+          error(result);
+          this.audit({ rpc, data, result, error: true, options });
+        };
+        cb(data, response);
+      });
+    } else {
+      this.client.rpc.provide(rpc, cb);
+    }
   }
 }
 
