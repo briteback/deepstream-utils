@@ -1,6 +1,6 @@
 {
   "name": "deepstream-utils",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "Deepstream utils for Briteback AB",
   "main": "src/client.js",
   "scripts": {
@@ -15,11 +15,11 @@
   "dependencies": {
     "ink-docstrap": "^1.3.0"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/briteback/deepstream-utils.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/briteback/deepstream-utils.git"
   },
   "bugs": {
-    "url" : "https://github.com/briteback/deepstream-utils/issues"
+    "url": "https://github.com/briteback/deepstream-utils/issues"
   }
 }
