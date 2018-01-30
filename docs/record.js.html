@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>DocStrap Source: record.js</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cosmo.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top navbar-inverse">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">DocStrap</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="classes.list.html" class="dropdown-toggle" data-toggle="dropdown">Classes<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="DeepstreamUtils.html">DeepstreamUtils</a></li><li><a href="RecordUtils.html">RecordUtils</a></li><li><a href="RpcUtils.html">RpcUtils</a></li>
+				</ul>
+			</li>
+			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu ">
+					<li><a href="global.html#addPromiseSet">addPromiseSet</a></li><li><a href="global.html#finishWriteAck">finishWriteAck</a></li><li><a href="global.html#promiseSet">promiseSet</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-12">
+	
+		<div id="main">
+			
+
+		<h1 class="page-title">Source: record.js</h1>
+    
+<section>
+    <article>
+        <pre
+            class="sunlight-highlight-javascript linenums">
+/**
+ * Callback handler for promiseSet. Rejects if there was an error, else resolves.
+ * @param {Function} resolve
+ * @param {Function} reject
+ */
+function finishWriteAck(resolve, reject) {
+  return error => {
+    if (error) reject(error);
+    else resolve();
+  };
+}
+
+/**
+ * A Promise-wrapped record.set() which resolves after write acknowledgement.
+ * @param {String} [path] A path for the value to be set on the record.
+ * @param {*} value The value to be set at the path, or an object containing the entire record data to set.
+ * @param {Boolean} [discard] Whether or not to discard the record.
+ * @returns {Promise}
+ */
+function promiseSet(path, value, discard) {
+  return new Promise((resolve, reject) => {
+    if (typeof path === 'object') {
+      discard = value;
+      this.set(path, finishWriteAck(resolve, reject));
+    } else {
+      this.set(path, value, finishWriteAck(resolve, reject));
+    }
+  }).then(() => {
+    if (discard) {
+      this.discard();
+    }
+    return this;
+  });
+}
+
+/**
+ * Adds a Promise-wrapped record.set() to a Deepstream record, for easy write acknowledgement.
+ * @param {Record} record A Deepstream record to add pSet to (modifies record)
+ * @returns {Record}
+ */
+function addPromiseSet(record) {
+  record.pSet = promiseSet.bind(record);
+  return record;
+}
+
+
+class RecordUtils {
+  /**
+   * Constructor for the record utils
+   * @param {Object} client A deepstream client to be used for the requests
+   */
+  constructor(client, options) {
+    this.options = options;
+    this.client = client;
+    this.setDataCallbacks = new Map();
+
+    /**
+     * Get the entries of a list.
+     * @param {String} listName
+     * @returns {Promise.&lt;Array>}
+     */
+    this.getEntries = this.snapshot;
+  }
+
+  /**
+   * Set data on a existing or new record without subscribing.
+   * @param {Array} args - First element will contain the record name,
+   * second element is a key or object, and if the second element is a
+   * key the third element must be the value.
+   * @param {Boolean} create - If the given recor name should be created
+   * @returns {Promise}
+   */
+  _setData(args, create) {
+    const [recordName] = args;
+
+    return new Promise((resolve, reject) => {
+      if (!this.setDataCallbacks.has(recordName)) {
+        this.setDataCallbacks.set(recordName, new Set([{ resolve, reject }]));
+      } else {
+        this.setDataCallbacks.get(recordName).add({ resolve, reject });
+      }
+
+      this.client.record.has(recordName, (error, hasRecord) => {
+        if (error) {
+          return reject(error);
+        } else if (!create &amp;&amp; !hasRecord) {
+          return reject(`Trying to setData on nonexistent record: ${recordName}`);
+        } else if (create &amp;&amp; hasRecord) {
+          return reject(`Trying to create and setData on existing record: ${recordName}`);
+        }
+
+        if (args.length === 2) {
+          return this.client.record.setData(recordName, args[1], setError => {
+            if (error) reject(setError);
+            else resolve();
+          });
+        } else if (args.length === 3) {
+          return this.client.record.setData(recordName, args[1], args[2], setError => {
+            if (error) reject(setError);
+            else resolve();
+          });
+        }
+        return reject(`Incorrect arguments given to setData: ${args}`);
+      });
+    }).then(res => {
+      if (this.setDataCallbacks.has(recordName)) {
+        this.setDataCallbacks.get(recordName).forEach(({ resolve }) => resolve(res));
+        this.setDataCallbacks.delete(recordName);
+      }
+      return res;
+    }).catch(error => {
+      if (this.setDataCallbacks.has(recordName)) {
+        this.setDataCallbacks.get(recordName).forEach(({ reject }) => reject(error));
+        this.setDataCallbacks.delete(recordName);
+      }
+      throw error;
+    });
+  }
+
+  /**
+   * Set data; will NOT create create record!
+   * @param {String} recordName
+   * @param {Object | String}  data or key
+   * @param {Object} [data]
+   * @returns {Promise}
+   */
+  setData(...args) {
+    return this._setData(args, false);
+  }
+
+  /**
+   * Set data; WILL create record!
+   * @param {String} recordName
+   * @param {Object | String}  data or key
+   * @param {Object} [data]
+   * @returns {Promise}
+   */
+  createAndSetData(...args) {
+    return this._setData(args, true);
+  }
+
+  /**
+   * Delete a record
+   * @param {String} recordName
+   * @returns {Promise}
+   */
+  delete(recordName) {
+    return this.getRecord(recordName)
+      .then(record => record.delete());
+  }
+
+  /**
+   * Checks if a record exists
+   * @param {String} recordName
+   * @returns {Promise} Resolves a boolean or rejects a error
+   */
+  has(recordName) {
+    return new Promise((resolve, reject) => {
+      this.client.record.has(recordName, (error, hasRecord) => {
+        if (error) reject(error);
+        else resolve(hasRecord);
+      });
+    });
+  }
+
+  /**
+   * Get a record, if the record didn't exist it will NOT
+   * be created and the promise will be rejected.
+   * Option disableHasCheck will disable this behavior and omit the check.
+   * @param {String} recordName
+   * @returns {Promise} Resolves the record
+   * @throws {exception} Throws if record doesn't exist
+   */
+  getRecord(recordName) {
+    if (this.options.disableHasCheck) {
+      return this.dsGetRecord(recordName);
+    }
+    return this.has(recordName)
+      .then(hasRecord => {
+        if (!hasRecord) {
+          throw `No record by that name ${recordName}`;
+        }
+
+        return this.dsGetRecord(recordName);
+      });
+  }
+
+  /**
+   * Create a record. Will throw if a record with that name already exists.
+   * @param {String} recordName name of the record to be created
+   * @returns {Promise} Resolves the created record
+   * @throws {exception} Throws if a record with that name already exists
+   */
+  createRecord(recordName) {
+    return this.has(recordName)
+      .then(hasRecord => {
+        if (hasRecord) {
+          throw `Record already exists ${recordName}`;
+        }
+
+        return this.dsGetRecord(recordName);
+      });
+  }
+
+  /**
+   * Get the data from a record.
+   * @param {String} recordName Name of the record to get a snapshot of
+   * @returns {Promise} Resolves the record data or rejects with an error
+   */
+  snapshot(recordName) {
+    return new Promise((resolve, reject) => {
+      this.client.record.snapshot(recordName, (error, snapshot) => {
+        if (error) reject({ error, recordName });
+        else resolve(snapshot);
+      });
+    });
+  }
+
+
+  /**
+   * Create or get a record.
+   * @param {String} recordName Name of the record to get or create
+   * @returns {Promise} Resolves an object with a created boolean and the record
+   */
+  getOrCreate(recordName) {
+    return this.has(recordName)
+      .then(hasRecord =>
+            this.dsGetRecord(recordName)
+            .then(record => ({
+              created: !hasRecord,
+              record
+            })));
+  }
+
+  /**
+   * Wraps deepstream getRecord in a promise.
+   * @param {Object} client Deepstream client
+   * @param {String} recordName Name of the record to get
+   * @returns {Promise}
+   */
+  dsGetRecord(recordName) {
+    return new Promise((resolve, reject) => {
+      const record = this.client.record.getRecord(recordName);
+      record.whenReady(() => resolve(addPromiseSet(record)));
+      record.on('error', err => reject(err));
+    });
+  }
+
+
+  /**
+   *
+   * @param {String} recordName
+   * @param {Boolean} ignoreWhenReady - If true; will return the list without waiting
+   * for when ready else a promise will be returned that resolves when the whenReady
+   * callback is called.
+   */
+  getList(listName, ignoreWhenReady) {
+    if (ignoreWhenReady) {
+      return this.client.record.getList(listName);
+    }
+    return new Promise((resolve, reject) => {
+      const list = this.client.record.getList(listName);
+      list.whenReady(() => resolve(list));
+      list.once('error', err => reject(err));
+    });
+  }
+
+  /**
+   * Add the entry to the list and discard.
+   * @param {String} listName
+   * @param {String} entry
+   * @returns {Promise}
+   */
+  addEntry(listName, entry, index) {
+    return this.getList(listName)
+      .then(list => {
+        list.addEntry(entry, index);
+        setTimeout(() => list.discard(), 10000);
+      });
+  }
+
+  /**
+   * Remove the entry from the list and discard.
+   * @param {String} listName
+   * @param {String} entry
+   * @returns {Promise}
+   */
+  removeEntry(listName, entry, index) {
+    return this.getList(listName)
+      .then(list => {
+        list.removeEntry(entry, index);
+        setTimeout(() => list.discard(), 10000);
+      });
+  }
+
+  /**
+   * Delete the list
+   * @param {String} listName
+   * @returns {Promise}
+   */
+  deleteList(listName) {
+    return this.getList(listName)
+      .then(list => list.delete());
+  }
+
+  /**
+   * Check if the list includes the given entry.
+   * @param {String} listName
+   * @param {String} entry
+   * @returns {Promise.&lt;Boolean>}
+   */
+  listIncludes(listName, entry) {
+    return this.getEntries(listName)
+      .then(entries => entries.includes(entry));
+  }
+}
+
+module.exports = RecordUtils;
+</pre>
+    </article>
+</section>
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+
+	<span class="copyright">
+	DocStrap Copyright © 2012-2015 The contributors to the JSDoc3 and DocStrap projects.
+	</span>
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a>
+	
+		on Tue Jan 30th 2018
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
