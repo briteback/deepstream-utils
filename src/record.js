@@ -312,7 +312,7 @@ class RecordUtils {
    */
   listIncludes(listName, entry) {
     return this.getEntries(listName)
-      .then(entries => entries.includes(entry));
+      .then(entries => Array.isArray(entries) && entries.includes(entry));
   }
 }
 
