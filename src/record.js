@@ -54,13 +54,6 @@ class RecordUtils {
     this.options = options;
     this.client = client;
     this.setDataCallbacks = new Map();
-
-    /**
-     * Get the entries of a list.
-     * @param {String} listName
-     * @returns {Promise.<Array>}
-     */
-    this.getEntries = this.snapshot;
   }
 
   /**
@@ -267,6 +260,17 @@ class RecordUtils {
   }
 
   /**
+   * Get the entries of a list.
+   * @param {String} listName
+   * @returns {Promise.<Array>}
+   */
+  getEntries(listName) {
+    return this.snapshot(listName)
+      .then(list => Array.isArray(list) ? list : []);
+  }
+
+
+  /**
    * Add the entry to the list and discard.
    * @param {String} listName
    * @param {String} entry
@@ -276,7 +280,8 @@ class RecordUtils {
     return this.getList(listName)
       .then(list => {
         list.addEntry(entry, index);
-        setTimeout(() => list.discard(), 10000);
+        const timeout = setTimeout(() => list.discard(), 10000);
+        list.on('delete', () => clearTimeout(timeout));
       });
   }
 
@@ -290,7 +295,8 @@ class RecordUtils {
     return this.getList(listName)
       .then(list => {
         list.removeEntry(entry, index);
-        setTimeout(() => list.discard(), 10000);
+        const timeout = setTimeout(() => list.discard(), 10000);
+        list.on('delete', () => clearTimeout(timeout));
       });
   }
 
@@ -312,7 +318,7 @@ class RecordUtils {
    */
   listIncludes(listName, entry) {
     return this.getEntries(listName)
-      .then(entries => Array.isArray(entries) && entries.includes(entry));
+      .then(entries => entries.includes(entry));
   }
 }
 
