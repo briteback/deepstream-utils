@@ -90,6 +90,24 @@ class RpcUtils {
       this.client.rpc.provide(rpc, cb);
     }
   }
+
+  /**
+   * Unprovide the given rpc
+   * @param {String} rpc
+   */
+  unprovide(rpc) {
+    this.client.rpc.unprovide(rpc);
+  }
+
+  /**
+   * Unprovide all rpcs currently provided by the client
+   */
+  unprovideAll() {
+    const rpcs = Object.keys(this.client.rpc._providers);
+    for (const rpc of rpcs) {
+      this.unprovide(rpc);
+    }
+  }
 }
 
 module.exports = RpcUtils;
