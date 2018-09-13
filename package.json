@@ -9,10 +9,8 @@
   },
   "author": "Briteback AB",
   "license": "ISC",
-  "peerDependencies": {
-    "deepstream.io-client-js": "4.x"
-  },
   "dependencies": {
+    "deepstream.io-client-js": "4.x",
     "ink-docstrap": "^1.3.0"
   },
   "repository": {
