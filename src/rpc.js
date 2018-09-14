@@ -73,14 +73,12 @@ class RpcUtils {
    */
   provide(rpc, cb, options) {
     if (options && this.audit) {
-      this.client.rpc.provide(rpc, async (data, response) => {
+      this.client.rpc.provide(rpc, (data, response) => {
         const send = response.send.bind(response);
         const error = response.error.bind(response);
-
-        response.send = async result => {
+        response.send = result => {
           send(result);
-          await this.audit({ rpc, data, result, error: false, options });
-          console.log('DONE!!');
+          this.audit({ rpc, data, result, error: false, options });
         };
         response.error = result => {
           error(result);
@@ -90,6 +88,24 @@ class RpcUtils {
       });
     } else {
       this.client.rpc.provide(rpc, cb);
+    }
+  }
+
+  /**
+   * Unprovide the given rpc
+   * @param {String} rpc
+   */
+  unprovide(rpc) {
+    this.client.rpc.unprovide(rpc);
+  }
+
+  /**
+   * Unprovide all rpcs currently provided by the client
+   */
+  unprovideAll() {
+    const rpcs = Object.keys(this.client.rpc._providers);
+    for (const rpc of rpcs) {
+      this.unprovide(rpc);
     }
   }
 }
