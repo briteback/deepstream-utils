@@ -4,13 +4,14 @@
   "description": "Deepstream utils for Briteback AB",
   "main": "src/client.js",
   "scripts": {
+    "build": "rm -rf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-doc": "rm -r docs && jsdoc -c node_modules/ink-docstrap/template/jsdoc.conf.json -t ./node_modules/ink-docstrap/template -R README.md -r src -d docs"
   },
   "author": "Briteback AB",
   "license": "ISC",
   "dependencies": {
-    "deepstream.io-client-js": "git+https://github.com/briteback/deepstream.io-client-js.git",
+    "deepstream.io-client-js": "git+https://github.com/briteback/deepstream.io-client-js.git#bleeding-edge",
     "ink-docstrap": "^1.3.0"
   },
   "repository": {
@@ -19,5 +20,10 @@
   },
   "bugs": {
     "url": "https://github.com/briteback/deepstream-utils/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^10.9.4",
+    "@types/ws": "^6.0.1",
+    "typescript": "^3.0.3"
   }
 }

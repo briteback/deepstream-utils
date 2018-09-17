@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist",
+    "sourceMap": true,
+    "allowJs": false,
+    "strictNullChecks": true,
+    "lib": [
+        "es2016",
+        "DOM",
+        "ES6",
+        "DOM.Iterable",
+        "ScriptHost"
+    ],
+      "types": []
+  },
+  "include": [
+    "node_modules/deepstream.io-client-js/dist/src/dependencies.d.ts",
+    "src/**/*",
+    "package.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
