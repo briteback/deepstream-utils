@@ -46,15 +46,9 @@ function addPromiseSet(record) {
 }
 
 
-interface SetDataCallback {
-  resolve: (value?: {} | PromiseLike<{}> | undefined) => void
-  reject: (reason?: any) => void
-}
-type SetDataType = Map<string, Set<SetDataCallback>>
 class RecordUtils {
   public options: any
   public client: any
-  private setDataCallbacks: SetDataType
 
   /**
    * Constructor for the record utils
@@ -63,56 +57,15 @@ class RecordUtils {
   constructor(client, options) {
     this.options = options;
     this.client = client;
-    this.setDataCallbacks = new Map();
   }
 
   /**
-   * Set data on a existing or new record without subscribing.
-   * @param {Array} args - First element will contain the record name,
-   * second element is a key or object, and if the second element is a
-   * key the third element must be the value.
-   * @param {Boolean} create - If the given recor name should be created
-   * @returns {Promise}
+   * Check that the arguments to setData are okay
+   * @param {Array} args
+   * @returns {Boolean}
    */
-  private _setData(args, create) {
-    const [recordName] = args;
-
-    return new Promise((resolve, reject) => {
-      if (!this.setDataCallbacks.has(recordName)) {
-        this.setDataCallbacks.set(recordName, new Set([{ resolve, reject }]));
-      } else {
-        this.setDataCallbacks.get(recordName)!.add({ resolve, reject });
-      }
-
-      this.client.record.has(recordName, (error, hasRecord) => {
-        if (error) {
-          return reject(error);
-        } else if (!create && !hasRecord) {
-          return reject(`Trying to setData on nonexistent record: ${recordName}`);
-        } else if (create && hasRecord) {
-          return reject(`Trying to create and setData on existing record: ${recordName}`);
-        }
-
-        if (args.length === 2) {
-          return this.client.record.setData(recordName, args[1], rejectOnError(resolve, reject))
-        } else if (args.length === 3) {
-          return this.client.record.setData(recordName, args[1], args[2], rejectOnError(resolve, reject))
-        }
-        return reject(`Incorrect arguments given to setData: ${args}`);
-      });
-    }).then(res => {
-      if (this.setDataCallbacks.has(recordName)) {
-        this.setDataCallbacks.get(recordName)!.forEach(({ resolve }) => resolve(res));
-        this.setDataCallbacks.delete(recordName);
-      }
-      return res;
-    }).catch(error => {
-      if (this.setDataCallbacks.has(recordName)) {
-        this.setDataCallbacks.get(recordName)!.forEach(({ reject }) => reject(error));
-        this.setDataCallbacks.delete(recordName);
-      }
-      throw error;
-    });
+  private checkSetDataArgs(args) {
+    return [2, 3].includes(args.length)
   }
 
   /**
@@ -122,8 +75,18 @@ class RecordUtils {
    * @param {Object} [data]
    * @returns {Promise}
    */
-  public setData(...args) {
-    return this._setData(args, false);
+  public async setData(...args) {
+    if (!this.checkSetDataArgs(args)) {
+      throw Error(`Incorrect arguments given to setData: ${args}`);
+    }
+
+    const [recordName] = args
+    const hasData = await this.has(recordName)
+    if (!hasData) {
+      throw Error(`Trying to setData on nonexistent record: ${recordName}`)
+    }
+
+    return this.client.setDataWithAck(...args);
   }
 
   /**
@@ -133,8 +96,18 @@ class RecordUtils {
    * @param {Object} [data]
    * @returns {Promise}
    */
-  public createAndSetData(...args) {
-    return this._setData(args, true);
+  public async createAndSetData(...args) {
+    if (!this.checkSetDataArgs(args)) {
+      throw Error(`Incorrect arguments given to createAndSetData: ${args}`);
+    }
+
+    const [recordName] = args
+    const hasData = await this.has(recordName)
+    if (hasData) {
+      throw Error(`Trying to create and setData on existing record: ${recordName}`);
+    }
+
+    return this.client.setDataWithAck(...args)
   }
 
   /**
