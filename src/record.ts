@@ -125,7 +125,7 @@ class RecordUtils {
    * @param {String} recordName
    * @returns {Promise} Resolves a boolean or rejects a error
    */
-  public async has(recordName) {
+  public has(recordName) {
     return this.client.record.has(recordName)
   }
 
@@ -168,8 +168,8 @@ class RecordUtils {
    * @param {String} recordName Name of the record to get a snapshot of
    * @returns {Promise} Resolves the record data or rejects with an error
    */
-  public async snapshot(recordName) {
-    return await this.client.record.snapshot(recordName)
+  public snapshot(recordName) {
+    return this.client.record.snapshot(recordName)
   }
 
 
@@ -195,6 +195,10 @@ class RecordUtils {
     // suitable way to rewrite `record.on('error', ...)`
     return new Promise((resolve, reject) => {
       const record = this.client.record.getRecord(recordName);
+
+      // In the long run we do not need to add pSet to every record since we can
+      // use setData, but pSet was added to provide the same functionality as
+      // setData before it existed. Remove when appropriate!
       record.whenReady(() => addPromiseSet(record))
       record.on('error', err => reject(err));
     });
