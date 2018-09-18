@@ -169,11 +169,7 @@ class RecordUtils {
    * @returns {Promise} Resolves the record data or rejects with an error
    */
   public async snapshot(recordName) {
-    try {
-      return await this.client.record.snapshot(recordName)
-    } catch (error) {
-      throw { error, recordName }
-    }
+    return await this.client.record.snapshot(recordName)
   }
 
 
