@@ -1,7 +1,7 @@
-import { deepstream } from 'deepstream.io-client-js'
+import * as deepstream_ from 'deepstream.io-client-js'
+const { deepstream } = deepstream_ as any
 import RecordUtils from './record'
 import RpcUtils from './rpc'
-
 
 class DeepstreamUtils {
   public options: any
@@ -11,6 +11,8 @@ class DeepstreamUtils {
 
   private _loginPromise: Promise<any> | null
   private _hasInitialized: boolean
+
+  static MERGE_STRATEGIES = deepstream.MERGE_STRATEGIES
 
   /**
    * Constructor for the deepstream utils
