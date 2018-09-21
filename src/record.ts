@@ -144,7 +144,7 @@ class RecordUtils {
 
     const hasRecord = await this.has(recordName)
     if (!hasRecord) {
-      throw `No record by that name${recordName}`
+      throw `No record by that name ${recordName}`
     }
     return this.dsGetRecord(recordName)
   }
