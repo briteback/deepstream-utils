@@ -199,7 +199,7 @@ class RecordUtils {
             // In the long run we do not need to add pSet to every record since we can
             // use setData, but pSet was added to provide the same functionality as
             // setData before it existed. Remove when appropriate!
-            record.whenReady(() => addPromiseSet(record));
+            record.whenReady(() => resolve(addPromiseSet(record)));
             record.on('error', err => reject(err));
         });
     }
