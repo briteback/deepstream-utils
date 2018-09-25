@@ -62,7 +62,6 @@ class RecordUtils {
     constructor(client, options) {
         this.options = options;
         this.client = client;
-        this.setDataCallbacks = new Map();
     }
     /**
      * Check that the arguments to setData are okay
@@ -129,9 +128,7 @@ class RecordUtils {
      * @returns {Promise} Resolves a boolean or rejects a error
      */
     has(recordName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return this.client.record.has(recordName);
-        });
+        return this.client.record.has(recordName);
     }
     /**
      * Get a record, if the record didn't exist it will NOT
@@ -148,7 +145,7 @@ class RecordUtils {
             }
             const hasRecord = yield this.has(recordName);
             if (!hasRecord) {
-                throw `No record by that name${recordName}`;
+                throw `No record by that name ${recordName}`;
             }
             return this.dsGetRecord(recordName);
         });
@@ -174,14 +171,7 @@ class RecordUtils {
      * @returns {Promise} Resolves the record data or rejects with an error
      */
     snapshot(recordName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                return yield this.client.record.snapshot(recordName);
-            }
-            catch (error) {
-                throw { error, recordName };
-            }
-        });
+        return this.client.record.snapshot(recordName);
     }
     /**
      * Create or get a record.
@@ -206,6 +196,9 @@ class RecordUtils {
         // suitable way to rewrite `record.on('error', ...)`
         return new Promise((resolve, reject) => {
             const record = this.client.record.getRecord(recordName);
+            // In the long run we do not need to add pSet to every record since we can
+            // use setData, but pSet was added to provide the same functionality as
+            // setData before it existed. Remove when appropriate!
             record.whenReady(() => addPromiseSet(record));
             record.on('error', err => reject(err));
         });

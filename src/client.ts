@@ -1,5 +1,4 @@
-import * as deepstream_ from 'deepstream.io-client-js'
-const { deepstream } = deepstream_ as any
+import deepstream from 'deepstream.io-client-js'
 import RecordUtils from './record'
 import RpcUtils from './rpc'
 

@@ -33,7 +33,7 @@ class DeepstreamUtils {
      * @returns {Promise} Resolves when the client has logged in
      */
     initClient() {
-        this.client = deepstream_io_client_js_1.deepstream(this.options.host, this.options.clientOptions);
+        this.client = deepstream_io_client_js_1.default(this.options.host, this.options.clientOptions);
         this.record.client = this.client;
         this.rpc.client = this.client;
         this.client.on('error', (error, event, topic) => {
@@ -88,5 +88,6 @@ class DeepstreamUtils {
         });
     }
 }
+DeepstreamUtils.MERGE_STRATEGIES = deepstream_io_client_js_1.default.MERGE_STRATEGIES;
 exports.default = DeepstreamUtils;
 //# sourceMappingURL=client.js.map
