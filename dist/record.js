@@ -88,7 +88,7 @@ class RecordUtils {
             if (!hasData) {
                 throw Error(`Trying to setData on nonexistent record: ${recordName}`);
             }
-            return this.client.setDataWithAck(...args);
+            return this.client.record.setDataWithAck(...args);
         });
     }
     /**
@@ -108,7 +108,7 @@ class RecordUtils {
             if (hasData) {
                 throw Error(`Trying to create and setData on existing record: ${recordName}`);
             }
-            return this.client.setDataWithAck(...args);
+            return this.client.record.setDataWithAck(...args);
         });
     }
     /**
