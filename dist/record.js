@@ -241,9 +241,14 @@ class RecordUtils {
     addEntry(listName, entry, index) {
         return __awaiter(this, void 0, void 0, function* () {
             const list = yield this.getList(listName);
-            list.addEntry(entry, index);
-            const timeout = setTimeout(() => list.discard(), LIST_DISCARD_TIMEOUT);
-            list.on('delete', () => clearTimeout(timeout));
+            yield new Promise((resolve, reject) => {
+                const rejectTimeout = setTimeout(() => reject('TIMEOUT for adding entry'), LIST_DISCARD_TIMEOUT);
+                list.addEntry(entry, index, () => {
+                    clearTimeout(rejectTimeout);
+                    resolve();
+                });
+            });
+            list.discard();
         });
     }
     /**
@@ -255,9 +260,14 @@ class RecordUtils {
     removeEntry(listName, entry, index) {
         return __awaiter(this, void 0, void 0, function* () {
             const list = yield this.getList(listName);
-            list.removeEntry(entry, index);
-            const timeout = setTimeout(() => list.discard(), LIST_DISCARD_TIMEOUT);
-            list.on('delete', () => clearTimeout(timeout));
+            yield new Promise((resolve, reject) => {
+                const rejectTimeout = setTimeout(() => reject('TIMEOUT for adding entry'), LIST_DISCARD_TIMEOUT);
+                list.removeEntry(entry, index, () => {
+                    clearTimeout(rejectTimeout);
+                    resolve();
+                });
+            });
+            list.discard();
         });
     }
     /**

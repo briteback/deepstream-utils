@@ -231,10 +231,9 @@ class RecordUtils {
    * @returns {Promise.<Array>}
    */
   public async getEntries(listName) {
-    const list = await this.snapshot(listName)
-    return Array.isArray(list) ? list : []
+    const list = await this.snapshot(listName);
+    return Array.isArray(list) ? list : [];
   }
-
 
   /**
    * Add the entry to the list and discard.
@@ -243,10 +242,15 @@ class RecordUtils {
    * @returns {Promise}
    */
   public async addEntry(listName, entry, index) {
-    const list = await this.getList(listName)
-    list.addEntry(entry, index)
-    const timeout = setTimeout(() => list.discard(), LIST_DISCARD_TIMEOUT)
-    list.on('delete', () => clearTimeout(timeout))
+    const list = await this.getList(listName);
+    await new Promise((resolve, reject) => {
+      const rejectTimeout = setTimeout(() => reject('TIMEOUT for adding entry'), LIST_DISCARD_TIMEOUT);
+      list.addEntry(entry, index, () => {
+        clearTimeout(rejectTimeout);
+        resolve();
+      });
+    });
+    list.discard();
   }
 
   /**
@@ -256,10 +260,15 @@ class RecordUtils {
    * @returns {Promise}
    */
   public async removeEntry(listName, entry, index) {
-    const list = await this.getList(listName)
-    list.removeEntry(entry, index);
-    const timeout = setTimeout(() => list.discard(), LIST_DISCARD_TIMEOUT);
-    list.on('delete', () => clearTimeout(timeout));
+    const list = await this.getList(listName);
+    await new Promise((resolve, reject) => {
+      const rejectTimeout = setTimeout(() => reject('TIMEOUT for adding entry'), LIST_DISCARD_TIMEOUT);
+      list.removeEntry(entry, index, () => {
+        clearTimeout(rejectTimeout);
+        resolve();
+      });
+    });
+    list.discard();
   }
 
   /**
