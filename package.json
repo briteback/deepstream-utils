@@ -10,7 +10,7 @@
   "author": "Briteback AB",
   "license": "ISC",
   "dependencies": {
-    "deepstream.io-client-js": "git+https://github.com/briteback/deepstream.io-client-js.git#v4.0.4"
+    "deepstream.io-client-js": "git+https://github.com/briteback/deepstream.io-client-js.git#v4.0.5"
   },
   "repository": {
     "type": "git",
