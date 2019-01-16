@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-doc": "rm -r docs && jsdoc -c node_modules/ink-docstrap/template/jsdoc.conf.json -t ./node_modules/ink-docstrap/template -R README.md -r src -d docs"
+    "build-doc": "rm -r docs && jsdoc -c node_modules/ink-docstrap/template/jsdoc.conf.json -t ./node_modules/ink-docstrap/template -R README.md -r src -d docs",
+    "prepublishOnly": "npm run build"
   },
   "author": "Briteback AB",
   "license": "ISC",
