@@ -91,7 +91,7 @@ class RpcUtils {
      * Unprovide all rpcs currently provided by the client
      */
     unprovideAll() {
-        const rpcs = Object.keys(this.client.rpc._providers);
+        const rpcs = this.client.rpc.providers.keys();
         for (const rpc of rpcs) {
             this.unprovide(rpc);
         }
