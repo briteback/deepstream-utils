@@ -1,6 +1,6 @@
 {
   "name": "deepstream-utils",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "Deepstream utils for Briteback AB",
   "main": "dist/client.js",
   "scripts": {
