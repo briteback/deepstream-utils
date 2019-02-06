@@ -173,6 +173,7 @@ class RecordUtils {
     try {
       return this.client.record.snapshot(recordName)
     } catch (err) {
+      err = err || {};
       err.message = err.message || '';
       err.message += ` recordName: "${recordName}"`;
       throw err;
