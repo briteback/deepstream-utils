@@ -170,7 +170,13 @@ class RecordUtils {
    * @returns {Promise} Resolves the record data or rejects with an error
    */
   public snapshot(recordName) {
-    return this.client.record.snapshot(recordName)
+    try {
+      return this.client.record.snapshot(recordName)
+    } catch (err) {
+      err.message = err.message || '';
+      err.message += ` recordName: "${recordName}"`;
+      throw err;
+    }
   }
 
 
