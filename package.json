@@ -6,7 +6,8 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "preversion": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "postversion": "git push && git push --tags"
   },
   "author": "Briteback AB",
   "license": "ISC",
