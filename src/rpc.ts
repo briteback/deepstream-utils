@@ -48,6 +48,7 @@ class RpcUtils {
     const callStart = Date.now()
     while (callStart + this.retryRPCTimeout > Date.now()) {
       try {
+        await this.preprocessRpcData(data)
         return await this.client.rpc.make(rpc, data)
       } catch (error) {
         if (error !== 'NO_RPC_PROVIDER' || this.retryRPCTimeout === 0) {
@@ -60,6 +61,18 @@ class RpcUtils {
     throw 'NO_RPC_PROVIDER'
   }
 
+  private async preprocessRpcData(data: any) {
+    if (this.options.preprocessRpcData) {
+      await this.options.preprocessRpcData(data)
+    }
+  }
+
+  private async upgradeRpcData(data: any) {
+    if (this.options.upgradeRpcData) {
+      await this.options.upgradeRpcData(data)
+    }
+  }
+
   /**
    * Provide a rpc
    * @param {String} rpc RPC name
@@ -70,7 +83,8 @@ class RpcUtils {
   public provide(rpc, cb, options) {
     if (options && this.audit) {
       const self = this
-      this.client.rpc.provide(rpc, (data, response) => {
+      this.client.rpc.provide(rpc, async (data, response) => {
+        await this.upgradeRpcData(data);
         const send = response.send.bind(response);
         const error = response.error.bind(response);
         response.send = result => {
@@ -84,7 +98,10 @@ class RpcUtils {
         cb(data, response);
       });
     } else {
-      this.client.rpc.provide(rpc, cb);
+      this.client.rpc.provide(rpc, async (data, response) => {
+        await this.upgradeRpcData(data);
+        cb(data, response);
+      });
     }
   }
 
