@@ -44,7 +44,7 @@ class RpcUtils {
    * @param {*} data
    * @returns {Promise} Resolves with rpc data
    */
-  public async make(rpc: string, data: any) {
+  public async make(rpc: string, data: any = {}) {
     const callStart = Date.now()
     while (callStart + this.retryRPCTimeout > Date.now()) {
       try {
